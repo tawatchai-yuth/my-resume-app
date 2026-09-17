@@ -6,22 +6,42 @@ FROM node:24-bookworm-slim
 
 WORKDIR /app
 
+
+# ==========================================
+# Dependencies
+# ==========================================
+
 COPY package*.json ./
 
 RUN npm ci
 
+
+# ==========================================
 # Prisma configuration
+# ==========================================
+
 COPY prisma.config.ts ./
 COPY prisma ./prisma
 
-RUN npx prisma generate --config ./prisma.config.ts
 
+# ==========================================
 # TypeScript / ESLint configuration
+# ==========================================
+
 COPY tsconfig.json ./
 COPY eslint.config.js ./
 
+
+# ==========================================
 # Source code
+# ==========================================
+
 COPY src ./src
+
+
+# ==========================================
+# Application
+# ==========================================
 
 EXPOSE 3000
 
