@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 
-import { prisma } from "./config/prisma";
+import { prisma } from "./config/prisma.js";
 
 const app = express();
 
