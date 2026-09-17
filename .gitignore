@@ -1,0 +1,89 @@
+# ==========================================
+# Root / Docker
+# ==========================================
+
+.env
+*.local
+
+
+# ==========================================
+# Backend - Node.js + Express + TypeScript
+# ==========================================
+
+backend/node_modules/
+backend/dist/
+backend/coverage/
+
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+backend/*.log
+backend/npm-debug.log*
+backend/yarn-debug.log*
+backend/yarn-error.log*
+backend/pnpm-debug.log*
+
+backend/*.tsbuildinfo
+
+
+# ==========================================
+# Frontend - Next.js
+# ==========================================
+
+frontend/node_modules/
+
+frontend/.next/
+frontend/out/
+frontend/build/
+
+frontend/coverage/
+
+frontend/.env*
+!frontend/.env.example
+
+frontend/*.log
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+frontend/.vercel/
+
+frontend/*.tsbuildinfo
+
+
+# ==========================================
+# Package Manager
+# ==========================================
+
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+
+# ==========================================
+# Editor
+# ==========================================
+
+.vscode/
+.idea/
+
+
+# ==========================================
+# OS
+# ==========================================
+
+.DS_Store
+Thumbs.db
+
+
+# ==========================================
+# Misc
+# ==========================================
+
+*.pem
