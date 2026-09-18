@@ -17,7 +17,7 @@ RUN npm ci
 
 
 # ==========================================
-# Prisma configuration
+# Prisma
 # ==========================================
 
 COPY prisma.config.ts ./
@@ -25,7 +25,7 @@ COPY prisma ./prisma
 
 
 # ==========================================
-# TypeScript / ESLint configuration
+# Configuration
 # ==========================================
 
 COPY tsconfig.json ./
@@ -33,7 +33,7 @@ COPY eslint.config.js ./
 
 
 # ==========================================
-# Source code
+# Source
 # ==========================================
 
 COPY src ./src
@@ -45,4 +45,4 @@ COPY src ./src
 
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "dev:docker"]
