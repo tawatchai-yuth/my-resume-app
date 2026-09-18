@@ -8,6 +8,15 @@ WORKDIR /app
 
 
 # ==========================================
+# System Dependencies
+# ==========================================
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# ==========================================
 # Dependencies
 # ==========================================
 
@@ -25,28 +34,30 @@ COPY prisma ./prisma
 
 
 # ==========================================
-# TypeScript configuration
+# Configuration
 # ==========================================
 
 COPY tsconfig.json ./
 
 
 # ==========================================
-# Source code
+# Source
 # ==========================================
 
 COPY src ./src
 
 
 # ==========================================
-# Generate Prisma Client
+# Prisma Client
 # ==========================================
+
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/dummy"
 
 RUN npm run prisma:generate
 
 
 # ==========================================
-# Build application
+# Build
 # ==========================================
 
 RUN npm run build
@@ -64,7 +75,16 @@ ENV NODE_ENV=production
 
 
 # ==========================================
-# Production dependencies
+# System Dependencies
+# ==========================================
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+
+# ==========================================
+# Production Dependencies
 # ==========================================
 
 COPY package*.json ./
@@ -81,14 +101,14 @@ COPY --from=builder /app/dist ./dist
 
 
 # ==========================================
-# Prisma generated client
+# Prisma Generated Client
 # ==========================================
 
 COPY --from=builder /app/src/generated ./src/generated
 
 
 # ==========================================
-# Runtime configuration
+# Prisma Configuration
 # ==========================================
 
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts

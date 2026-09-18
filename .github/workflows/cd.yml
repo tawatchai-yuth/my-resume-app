@@ -17,11 +17,11 @@ permissions:
 
 jobs:
     # ==========================================
-    # Deploy
+    # Build and Push
     # ==========================================
 
-    deploy:
-        name: Build and Deploy to Linux VPS
+    build-and-push:
+        name: Build and Push Docker Images
 
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
@@ -95,94 +95,17 @@ jobs:
                   cache-to: type=gha,mode=max
 
             # ==========================================
-            # Deploy to Linux VPS
+            # Deployment Status
             # ==========================================
 
-            - name: Deploy to Linux VPS
-              uses: appleboy/ssh-action@v1.2.2
+            - name: Build and Push completed
+              run: |
+                  echo "=========================================="
+                  echo "Build and Push completed"
+                  echo "=========================================="
 
-              env:
-                  IMAGE_TAG: sha-${{ github.event.workflow_run.head_sha }}
+                  echo "Backend:"
+                  echo "ghcr.io/${{ github.repository_owner }}/my-resume-backend:sha-${{ github.event.workflow_run.head_sha }}"
 
-              with:
-                  host: ${{ secrets.VPS_HOST }}
-                  username: ${{ secrets.VPS_USERNAME }}
-                  key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-
-                  envs: IMAGE_TAG
-
-                  script: |
-                      set -e
-
-                      echo "=========================================="
-                      echo "Deploying to Linux VPS"
-                      echo "=========================================="
-
-                      echo "IMAGE_TAG=${IMAGE_TAG}"
-
-                      # ==========================================
-                      # Go to application directory
-                      # ==========================================
-
-                      cd "${{ secrets.VPS_APP_PATH }}"
-
-                      echo "Application path:"
-                      pwd
-
-                      # ==========================================
-                      # Create deployment environment
-                      # ==========================================
-
-                      echo "Creating .env.deploy"
-
-                      cat > .env.deploy <<EOF
-                      IMAGE_TAG=${IMAGE_TAG}
-                      EOF
-
-                      # ==========================================
-                      # Pull Docker images
-                      # ==========================================
-
-                      echo "Pulling Docker images..."
-
-                      docker compose \
-                        --env-file .env.prod \
-                        --env-file .env.deploy \
-                        -f docker-compose.prod.yml \
-                        pull
-
-                      # ==========================================
-                      # Start / Update containers
-                      # ==========================================
-
-                      echo "Starting containers..."
-
-                      docker compose \
-                        --env-file .env.prod \
-                        --env-file .env.deploy \
-                        -f docker-compose.prod.yml \
-                        up -d
-
-                      # ==========================================
-                      # Show container status
-                      # ==========================================
-
-                      echo "Container status:"
-
-                      docker compose \
-                        --env-file .env.prod \
-                        --env-file .env.deploy \
-                        -f docker-compose.prod.yml \
-                        ps
-
-                      # ==========================================
-                      # Cleanup unused Docker images
-                      # ==========================================
-
-                      echo "Cleaning unused Docker images..."
-
-                      docker image prune -f
-
-                      echo "=========================================="
-                      echo "Deployment completed"
-                      echo "=========================================="
+                  echo "Frontend:"
+                  echo "ghcr.io/${{ github.repository_owner }}/my-resume-frontend:sha-${{ github.event.workflow_run.head_sha }}"
