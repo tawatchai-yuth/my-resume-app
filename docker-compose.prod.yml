@@ -1,4 +1,8 @@
 services:
+  # ==========================================
+  # PostgreSQL
+  # ==========================================
+
   postgres:
     image: postgres:17-alpine
     container_name: app-postgres-prod
@@ -13,20 +17,21 @@ services:
       - postgres_data_prod:/var/lib/postgresql/data
 
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}",
-        ]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
       start_period: 5s
 
+    networks:
+      - app-network
+
+  # ==========================================
+  # Backend
+  # ==========================================
+
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
+    image: ${BACKEND_IMAGE}:${IMAGE_TAG}
 
     container_name: app-backend-prod
     restart: unless-stopped
@@ -39,8 +44,8 @@ services:
 
       FRONTEND_URL: ${FRONTEND_URL}
 
-    ports:
-      - "${BACKEND_PORT:-3000}:3000"
+    expose:
+      - "3000"
 
     depends_on:
       postgres:
@@ -48,6 +53,74 @@ services:
 
     security_opt:
       - no-new-privileges:true
+
+    networks:
+      - app-network
+
+  # ==========================================
+  # Frontend - Next.js
+  # ==========================================
+
+  frontend:
+    image: ${FRONTEND_IMAGE}:${IMAGE_TAG}
+
+    container_name: app-frontend-prod
+    restart: unless-stopped
+
+    environment:
+      NODE_ENV: production
+
+    expose:
+      - "3000"
+
+    depends_on:
+      - backend
+
+    security_opt:
+      - no-new-privileges:true
+
+    networks:
+      - app-network
+
+  # ==========================================
+  # Nginx Reverse Proxy
+  # ==========================================
+
+  nginx:
+    image: nginx:1.27-alpine
+
+    container_name: app-nginx-prod
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+      - "443:443"
+
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+
+    depends_on:
+      - frontend
+      - backend
+
+    security_opt:
+      - no-new-privileges:true
+
+    networks:
+      - app-network
+
+# ==========================================
+# Networks
+# ==========================================
+
+networks:
+  app-network:
+    driver: bridge
+
+# ==========================================
+# Volumes
+# ==========================================
 
 volumes:
   postgres_data_prod:
