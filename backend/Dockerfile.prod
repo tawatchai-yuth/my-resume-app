@@ -1,0 +1,111 @@
+# ==========================================
+# Builder
+# ==========================================
+
+FROM node:24-bookworm-slim AS builder
+
+WORKDIR /app
+
+
+# ==========================================
+# Dependencies
+# ==========================================
+
+COPY package*.json ./
+
+RUN npm ci
+
+
+# ==========================================
+# Prisma
+# ==========================================
+
+COPY prisma.config.ts ./
+COPY prisma ./prisma
+
+
+# ==========================================
+# TypeScript configuration
+# ==========================================
+
+COPY tsconfig.json ./
+
+
+# ==========================================
+# Source code
+# ==========================================
+
+COPY src ./src
+
+
+# ==========================================
+# Generate Prisma Client
+# ==========================================
+
+RUN npm run prisma:generate
+
+
+# ==========================================
+# Build application
+# ==========================================
+
+RUN npm run build
+
+
+# ==========================================
+# Production
+# ==========================================
+
+FROM node:24-bookworm-slim AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+
+# ==========================================
+# Production dependencies
+# ==========================================
+
+COPY package*.json ./
+
+RUN npm ci --omit=dev \
+    && npm cache clean --force
+
+
+# ==========================================
+# Application
+# ==========================================
+
+COPY --from=builder /app/dist ./dist
+
+
+# ==========================================
+# Prisma generated client
+# ==========================================
+
+COPY --from=builder /app/src/generated ./src/generated
+
+
+# ==========================================
+# Runtime configuration
+# ==========================================
+
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/prisma ./prisma
+
+
+# ==========================================
+# Security
+# ==========================================
+
+USER node
+
+
+# ==========================================
+# Application
+# ==========================================
+
+EXPOSE 3000
+
+CMD ["node", "dist/server.js"]
