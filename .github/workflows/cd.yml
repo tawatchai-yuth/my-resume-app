@@ -23,6 +23,16 @@ jobs:
     deploy:
         name: Build and Deploy to Linux VPS
 
+        # ==========================================
+        # GitHub Environment
+        # ==========================================
+
+        environment: production
+
+        # ==========================================
+        # Only deploy when CI succeeds
+        # ==========================================
+
         if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
         runs-on: ubuntu-latest
@@ -36,6 +46,48 @@ jobs:
               uses: actions/checkout@v4
               with:
                   ref: ${{ github.event.workflow_run.head_sha }}
+
+            # ==========================================
+            # Check deployment secrets
+            # ==========================================
+
+            - name: Check deployment secrets
+              shell: bash
+              env:
+                  VPS_HOST: ${{ secrets.VPS_HOST }}
+                  VPS_USERNAME: ${{ secrets.VPS_USERNAME }}
+                  VPS_APP_PATH: ${{ secrets.VPS_APP_PATH }}
+                  VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+
+              run: |
+                  set -e
+
+                  echo "Checking deployment secrets..."
+
+                  if [ -z "$VPS_HOST" ]; then
+                      echo "ERROR: VPS_HOST is missing"
+                      exit 1
+                  fi
+
+                  if [ -z "$VPS_USERNAME" ]; then
+                      echo "ERROR: VPS_USERNAME is missing"
+                      exit 1
+                  fi
+
+                  if [ -z "$VPS_APP_PATH" ]; then
+                      echo "ERROR: VPS_APP_PATH is missing"
+                      exit 1
+                  fi
+
+                  if [ -z "$VPS_SSH_PRIVATE_KEY" ]; then
+                      echo "ERROR: VPS_SSH_PRIVATE_KEY is missing"
+                      exit 1
+                  fi
+
+                  echo "VPS_HOST is configured"
+                  echo "VPS_USERNAME is configured"
+                  echo "VPS_APP_PATH is configured"
+                  echo "VPS_SSH_PRIVATE_KEY is configured"
 
             # ==========================================
             # Login to GHCR
