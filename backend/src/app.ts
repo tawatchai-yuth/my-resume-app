@@ -4,9 +4,11 @@ import helmet from "helmet";
 import { pinoHttp } from "pino-http";
 
 import { logger } from "./config/logger.js";
-import { prisma } from "./config/prisma.js";
-import { errorHandler } from "./middlewares/errorHandler.js";
-import { notFound } from "./middlewares/notFound.js";
+import { prisma } from "./lib/prisma.js";
+import { errorHandler } from "./middleware/errorHandler.js";
+import { notFound } from "./middleware/notFound.js";
+import { authRouter } from "./modules/auth/auth.routes.js";
+import { userRouter } from "./modules/users/users.routes.js";
 
 const app = express();
 
@@ -77,7 +79,12 @@ app.get("/health/ready", async (_req, res) => {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logger.error(error, "Database health check failed");
+    logger.error(
+      {
+        err: error,
+      },
+      "Database health check failed",
+    );
 
     res.status(503).json({
       status: "not_ready",
@@ -98,14 +105,34 @@ app.get("/api", (_req, res) => {
 });
 
 /**
+ * Authentication API
+ *
+ * POST /api/auth/register
+ * POST /api/auth/login
+ * POST /api/auth/refresh
+ * POST /api/auth/logout
+ */
+app.use("/api/auth", authRouter);
+
+/**
+ * Users API
+ *
+ * GET /api/users/me
+ */
+app.use("/api/users", userRouter);
+
+/**
  * 404
+ *
+ * Must be registered after all routes.
  */
 app.use(notFound);
 
 /**
  * Global error handler
  *
- * Must be registered after all routes.
+ * Must be registered after all routes
+ * and the notFound middleware.
  */
 app.use(errorHandler);
 

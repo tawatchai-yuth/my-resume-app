@@ -40,6 +40,10 @@ services:
 
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-my_resume_db}?schema=public
 
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env -- see .env.example}
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-15m}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-720h}
+
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3001}
 
     ports:
