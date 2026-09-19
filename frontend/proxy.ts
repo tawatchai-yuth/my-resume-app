@@ -7,7 +7,7 @@ function isPublicRoute(pathname: string): boolean {
   return publicRoutes.includes(pathname);
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isPublicRoute(pathname)) {
@@ -23,6 +23,7 @@ export function middleware(request: NextRequest) {
 
     return NextResponse.redirect(loginUrl);
   }
+
   return NextResponse.next();
 }
 
